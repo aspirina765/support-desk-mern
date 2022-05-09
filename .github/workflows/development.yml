@@ -1,0 +1,29 @@
+
+name: React Development (Test and Build)
+on:
+  push:
+    branches: [ develop ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      name: Check out repository
+    - uses: actions/setup-node@v1
+      name: Set up Node.js
+      with:
+        node-version: 18.0.0
+    - run: |
+        npm install
+        npm ci
+        npm test
+        npm run build
+      name: Test and Build
+    - name: Deploy to Heroku
+      env:
+        HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+        HEROKU_APP_NAME: "github-actions-heroku-dev01"
+      if: github.ref == 'refs/heads/master' && job.status == 'success'
+      run: git push https://heroku:$HEROKU_API_TOKEN@git.heroku.com/$HEROKU_APP_NAME.git origin/master:master
+
+
